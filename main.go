@@ -17,6 +17,7 @@ var (
 	workDir     string
 	address     string
 	tokenFile   string
+	prefix      string
 
 	logger = log.NewLogger("[main]")
 )
@@ -26,6 +27,7 @@ func parse() {
 	flag.StringVar(&workDir, "w", "scripts", "working directory")
 	flag.StringVar(&address, "l", ":8080", "http server listen address")
 	flag.StringVar(&tokenFile, "tf", "token.list", "access token file")
+	flag.StringVar(&prefix, "p", "", "URI prefix")
 	flag.Parse()
 }
 
@@ -89,6 +91,13 @@ func (*ScriptHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// get script file name
 	fileName := r.URL.Path
+	if prefix != "" {
+		if strings.Index(fileName, prefix) != 0 {
+			http.NotFound(w, r)
+			return
+		}
+		fileName = strings.Replace(fileName, prefix, "", 1)
+	}
 	if strings.Index(fileName, "/scripts") != 0 {
 		http.NotFound(w, r)
 		return
