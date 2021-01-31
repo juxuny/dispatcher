@@ -16,6 +16,7 @@ var (
 	interpreter string
 	workDir     string
 	address     string
+	tokenFile   string
 
 	logger = log.NewLogger("[main]")
 )
@@ -24,6 +25,7 @@ func parse() {
 	flag.StringVar(&interpreter, "b", "/bin/bash", "script interpreter")
 	flag.StringVar(&workDir, "w", "scripts", "working directory")
 	flag.StringVar(&address, "l", ":8080", "http server listen address")
+	flag.StringVar(&tokenFile, "tf", "token.list", "access token file")
 	flag.Parse()
 }
 
@@ -102,6 +104,13 @@ func (*ScriptHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for k, vs := range r.Form {
 		if len(vs) > 0 {
 			env = append(env, fmt.Sprintf("%s=%s", k, vs[0]))
+		}
+	}
+	if tokenFile != "" {
+		token := r.FormValue("token")
+		if ok, err := checkToken(tokenFile, token); err != nil || !ok {
+			respError(w, "Unauthorized", http.StatusUnauthorized)
+			return
 		}
 	}
 	if len(env) > 0 {
