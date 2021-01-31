@@ -22,6 +22,9 @@ func checkToken(file string, token string) (ok bool, err error) {
 		if strings.Index(item, "#") == 0 {
 			continue
 		}
+		if strings.TrimSpace(item) == "" {
+			continue
+		}
 		if strings.TrimSpace(item) == token {
 			return true, nil
 		}
